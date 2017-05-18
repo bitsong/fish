@@ -2,7 +2,7 @@
 #define __AMC7823_H__
 
 
-#if 1
+#if 0
 /* AMC 1 parameter data */
 #define    AMC1_TYPE          AMC7823
 #define	   AMC1_VOLTAGE		  (2.5f)
