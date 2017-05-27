@@ -159,7 +159,7 @@ volatile union{
 	u16 Data;
 }LMX2571_R01;								// R01	��F1 of the N-divide
 
-#if 1
+#if 0
 //F2 for transmit
 unsigned int lmx_init[174]={
 0x002000,
@@ -215,6 +215,7 @@ unsigned int lmx_init[174]={
 
 
 #else
+//F1 24M 0SC  27.5M for transmit
 unsigned int lmx_init[174]={
 0x002000,
 0x3CA000,
@@ -228,7 +229,7 @@ unsigned int lmx_init[174]={
 0x2711FB,
 0x230C83,
 0x221003,
-0x210000,
+0x210006,
 0x200000,
 0x1F0000,
 0x1E0000,
@@ -239,12 +240,12 @@ unsigned int lmx_init[174]={
 0x190000,
 0x18000E,
 0x170E44,
-0x168C85,
-0x150401,
-0x142079,
-0x13000E,
-0x120002,
-0x110000,
+0x169483,
+0x150301,
+0x142065,
+0x13D085,
+0x124E4F,
+0x110303,
 0x100000,
 0x0F0000,
 0x0E0000,
@@ -255,17 +256,15 @@ unsigned int lmx_init[174]={
 0x090000,
 0x08040E,
 0x070E84,
-0x068c85,
-0x050401,
-0x042077,
-0x030000,//0x03D085,
-0x02d41c,//0x02FB1A,
-0x010041,//0x010300,
-//0x03D085,
-//0x02FB1A,
-//0x010300,
+0x069583,
+0x050301,
+0x04205B,
+0x03D087,
+0x028B04,
+0x010302,
 0x000983,
 };
+
 
 #endif
 

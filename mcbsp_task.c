@@ -433,7 +433,7 @@ void _task_mcbsp(void)
     for (count = 0; count < (NUM_BUFS); count++)
     {
         memset((uint8_t *)bufTx[count], 0, BUFSIZE);
-        LMX2571_FM_CAL( 1,  156.8);//415.125 	156.525;
+        LMX2571_FM_CAL( 1,  38.2);//415.125 	156.525;
 //        FSK_FAST_SPI(5);
         for (tempCount = 0; tempCount < 162; tempCount++){
         		reg_24data.all=lmx_init[tempCount/3];

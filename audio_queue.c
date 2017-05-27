@@ -40,7 +40,7 @@ state enAudioQueue(audioQueue * q, AudioQueue_DATA_TYPE data)
 	//如果队列满
     if(q->capacity >= q->size)
     {
-		printf("Warming:The AudioQueue is full %d!\n",q->size);
+//		printf("Warming:The AudioQueue is full %d!\n",q->size);
 		return ERROR;
     }
 

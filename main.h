@@ -50,6 +50,14 @@
 #define I2C_W			40
 #define IWC_R			41
 
+#define TX_CHF			100
+#define RX_CHF			101
+#define H_TX			110
+#define L_TX			111
+#define RSSTH			120
+#define RXSSI			150
+#define TXPI			151
+
 
 #define RPE_DATA_SIZE		480
 #define REC_BUFSIZE	 		768  //256*3

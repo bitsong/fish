@@ -28,6 +28,8 @@ unsigned char *buf_transmit;
 unsigned char buf_adc[REC_BUFSIZE];
 
 double RSSI_db=0;
+UInt RXSS_THRESHOLD =0;
+
 /* private functions */
 Void smain(UArg arg0, UArg arg1);
 Void task_enque(UArg arg0, UArg arg1);
@@ -108,8 +110,8 @@ Void smain(UArg arg0, UArg arg1)
     else
     	log_info("amc7823 initial done.");
 
-    dac_write(0, 1.633);
-    dac_write(3, 0);
+//    dac_write(0, 1.633);
+//    dac_write(3, 0);
 
     //send ready message
     status=sync_send(SYNC_CODE_PREPARE);
@@ -405,10 +407,10 @@ void sys_configure(void)
     syscfgRegs->PINMUX14 |= 0x00000088;
 
 
-    //GP2[2]	CE
-    CSL_FINS(gpioRegs->BANK[GP2].DIR,GPIO_DIR_DIR2,0);
-//    CSL_FINS(gpioRegs->BANK[1].OUT_DATA,GPIO_OUT_DATA_OUT2,0);
-    CSL_FINS(gpioRegs->BANK[GP2].OUT_DATA,GPIO_OUT_DATA_OUT2,1);
+//    //GP2[2]	DSC_LE
+//    CSL_FINS(gpioRegs->BANK[GP2].DIR,GPIO_DIR_DIR2,0);
+////    CSL_FINS(gpioRegs->BANK[1].OUT_DATA,GPIO_OUT_DATA_OUT2,0);
+//    CSL_FINS(gpioRegs->BANK[GP2].OUT_DATA,GPIO_OUT_DATA_OUT2,1);
     //GP4[0]	MUX
 //    CSL_FINS(gpioRegs->BANK[2].DIR,GPIO_DIR_DIR0,1);
 //    //GP4[2]	T/R
@@ -417,21 +419,22 @@ void sys_configure(void)
 //    CSL_FINS(gpioRegs->BANK[2].OUT_DATA,GPIO_OUT_DATA_OUT2,0);
 
     //GP3[12] LNA_ATT_EN
-    CSL_FINS(gpioRegs->BANK[1].DIR,GPIO_DIR_DIR28,0);
-    CSL_FINS(gpioRegs->BANK[1].OUT_DATA,GPIO_OUT_DATA_OUT28,0);
+//    CSL_FINS(gpioRegs->BANK[1].DIR,GPIO_DIR_DIR28,0);
+//    CSL_FINS(gpioRegs->BANK[1].OUT_DATA,GPIO_OUT_DATA_OUT28,0);
     //GP3[13] IF_AGC_CTL
     CSL_FINS(gpioRegs->BANK[1].DIR,GPIO_DIR_DIR29,0);
-    CSL_FINS(gpioRegs->BANK[1].OUT_DATA,GPIO_OUT_DATA_OUT29,0);
+    CSL_FINS(gpioRegs->BANK[1].OUT_DATA,GPIO_OUT_DATA_OUT29,1);
 
     //GP6[13]
     CSL_FINS(gpioRegs->BANK[3].DIR,GPIO_DIR_DIR13,0);
-    CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT13,0);
-//    CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT13,1); //T:F2
-    //GP6[6] GP6[7]	TX_SW RX_SW
-    CSL_FINS(gpioRegs->BANK[3].DIR,GPIO_DIR_DIR6,0);//TX_SW
+//    CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT13,0);
+    CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT13,1); //R:F2
+    //GP6[6] 	TX_EN:1 RX_EN:0
+    CSL_FINS(gpioRegs->BANK[3].DIR,GPIO_DIR_DIR6,0);
     CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT6,0);
-    CSL_FINS(gpioRegs->BANK[3].DIR,GPIO_DIR_DIR7,0);//RX_SW
-    CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT7,1);
+
+//    CSL_FINS(gpioRegs->BANK[3].DIR,GPIO_DIR_DIR7,0);//RX_SW
+//    CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT7,1);
 
 }
 
@@ -464,27 +467,25 @@ void dsp_logic(message_t *msg_send)
     if (status>=0){
     	msg_temp.type=msg->type;
     	strcpy(msg_temp.data.d,msg->data.d);
-//    	log_info("message type	  is %d",msg->type);
-//    	log_info("message content is %s",msg->data.d);
+    	log_info("message type	  is %d",msg->type);
+    	log_info("message content is %s",msg->data.d);
     	msg->data.d[0]='\0';
     }
     if(status>=0){
     		switch (msg_temp.type){
     		case LMX2571_TX:
-    			CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT7,0);//RX_SW
-    			CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT6,1); //TX_SW
-    			CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT13,1); //T:F2
+    			CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT6,1);
+    			CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT13,0); //T:F2
     		    //TX_DAC
-    		    dac_write(3, 1.633);
+//    		    dac_write(3, 1.633);
     			rx_flag=0;
     			tx_flag=1;
     			break;
     		case LMX2571_RX:
-    			dac_write(3, 0);
+//    			dac_write(3, 0);
 
-    			CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT6,0); //TX_SW
-    			CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT7,1);//RX_SW
-    			CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT13,0); //R:F1
+    			CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT6,0);
+    			CSL_FINS(gpioRegs->BANK[3].OUT_DATA,GPIO_OUT_DATA_OUT13,1); //R:F1
 
 				tx_flag=0;
 				tx_submit=0;
@@ -498,7 +499,6 @@ void dsp_logic(message_t *msg_send)
     			}
     			msg_send->type=RSSI_RD;
     			sprintf(msg_send->data.d,"%lf",RSSI_db);
-    			log_info("rssi_rd is %lf",msg_send->data.d);
     			status=messageq_send(&msgq[0],(messageq_msg_t)msg_send,0,0,0);
     			if(status<0){
     				log_error("message send error");
@@ -544,19 +544,19 @@ void dsp_logic(message_t *msg_send)
     		case TX_CH:
     			log_info("tx_ch:%f",atof(msg_temp.data.d));
     			LMX2571_FM_CAL(1,atof(msg_temp.data.d));
-    			lmx_init[53]=0xBC3;
-    			lmx_init[54]=lmx_init[55]=0x9C3;
-    			lmx_init[56]=0x9C3;
+    			lmx_init[53]=0xB83;
+    			lmx_init[54]=lmx_init[55]=0x983;
+    			lmx_init[56]=0x983;
     			ch_chPara();
     			Task_sleep(10);
     			memset(buf_transmit,0x80,RPE_DATA_SIZE/2*15);
     			break;
     		case RX_CH:
-    			log_info("rx_ch:%f",49.95+atof(msg_temp.data.d));
-    			LMX2571_FM_CAL(0,49.95+atof(msg_temp.data.d));
-    			lmx_init[53]=0xB83;
-    			lmx_init[54]=lmx_init[55]=0x983;
-    			lmx_init[56]=0x983;
+    			log_info("rx_ch:%f",10.7+atof(msg_temp.data.d));
+    			LMX2571_FM_CAL(0,10.7+atof(msg_temp.data.d));
+    			lmx_init[53]=0xBC3;
+    			lmx_init[54]=lmx_init[55]=0x9C3;
+    			lmx_init[56]=0x9C3;
     			ch_chPara();
     			Task_sleep(10);
     			memset(buf_transmit,0x80,RPE_DATA_SIZE/2*15);
@@ -601,6 +601,61 @@ void dsp_logic(message_t *msg_send)
     		    	log_error("message send error");
     		    }
     		    break;
+    		case TX_CHF:
+    			log_info("tx_ch:%f",atof(msg_temp.data.d));
+    			LMX2571_FM_CAL(1,atof(msg_temp.data.d));
+    			lmx_init[53]=0xB83;
+    			lmx_init[54]=lmx_init[55]=0x983;
+    			lmx_init[56]=0x983;
+    			ch_chPara();
+    			Task_sleep(10);
+    			memset(buf_transmit,0x80,RPE_DATA_SIZE/2*15);
+    			break;
+    		case RX_CHF:
+    			log_info("rx_ch:%f",10.7+atof(msg_temp.data.d));
+    			LMX2571_FM_CAL(0,10.7+atof(msg_temp.data.d));
+    			lmx_init[53]=0xBC3;
+    			lmx_init[54]=lmx_init[55]=0x9C3;
+    			lmx_init[56]=0x9C3;
+    			ch_chPara();
+    			Task_sleep(10);
+    			memset(buf_transmit,0x80,RPE_DATA_SIZE/2*15);
+    			break;
+    		case H_TX:
+    			dac_write(3, 1.633);
+    			break;
+    		case L_TX:
+    			dac_write(3, 0.8);
+    			break;
+    		case RSSTH:
+    			RXSS_THRESHOLD=atoi(msg_temp.data.d);
+    			break;
+    		case RXSSI:
+    			while(msg_send->data.d[0]!='\0'){
+    				Task_sleep(10);
+    				log_warn("message is not empty");
+    			}
+    			msg_send->type=RXSSI;
+    			sprintf(msg_send->data.d,"%f",RSSI_db);
+    			log_info("lmx2571_ld is %f",msg_send->data.d);
+    			status=messageq_send(&msgq[0],(messageq_msg_t)msg_send,0,0,0);
+    			if(status<0){
+    				log_error("message send error");
+    			}
+    			break;
+    		case TXPI:
+    			while(msg_send->data.d[0]!='\0'){
+    				Task_sleep(10);
+    				log_warn("message is not empty");
+    			}
+    			msg_send->type=TXPI;
+    			ad_value=adc_read(6);
+    			sprintf(msg_send->data.d,"%f",ad_value);
+    			status=messageq_send(&msgq[0],(messageq_msg_t)msg_send,0,0,0);
+    			if(status<0){
+    			    log_error("message send error");
+    			}
+    			break;
     		default:
     			log_error("unknown message type");
     			break;

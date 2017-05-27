@@ -2078,9 +2078,9 @@ int32_t Mcbsp_localConfigureSrgr(Mcbsp_Object_Unpadded *instHandle,
         else
         {
         	//MODIFIED BY WANGSONG
-        	 framePeriod=27;
+        	 framePeriod=24;
         	 instHandle->srgrConfig.srgFrmPulseWidth=23;
-        	 clkgDiv=4;
+        	 clkgDiv=7;
 
             /* set the value of the CLKGDIV                                   */
             instHandle->hwInfo.regs->SRGR &= (~CSL_MCBSP_SRGR_CLKGDV_MASK);
