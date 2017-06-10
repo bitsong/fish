@@ -11,7 +11,7 @@
 #include "syslink_init.h"
 #include "main.h"
 #include "audio_queue.h"
-#include "amc7823.h"
+#include "amc_adf.h"
 
 
 #define SYNC_CODE_PREPARE	100
@@ -467,8 +467,8 @@ void dsp_logic(message_t *msg_send)
     if (status>=0){
     	msg_temp.type=msg->type;
     	strcpy(msg_temp.data.d,msg->data.d);
-    	log_info("message type	  is %d",msg->type);
-    	log_info("message content is %s",msg->data.d);
+//    	log_info("message type	  is %d",msg->type);
+//    	log_info("message content is %s",msg->data.d);
     	msg->data.d[0]='\0';
     }
     if(status>=0){
@@ -543,7 +543,7 @@ void dsp_logic(message_t *msg_send)
     			break;
     		case TX_CH:
     			log_info("tx_ch:%f",atof(msg_temp.data.d));
-    			LMX2571_FM_CAL(1,atof(msg_temp.data.d));
+    			LMX2571_FM_CAL(0,atof(msg_temp.data.d));
     			lmx_init[53]=0xB83;
     			lmx_init[54]=lmx_init[55]=0x983;
     			lmx_init[56]=0x983;
@@ -553,7 +553,7 @@ void dsp_logic(message_t *msg_send)
     			break;
     		case RX_CH:
     			log_info("rx_ch:%f",10.7+atof(msg_temp.data.d));
-    			LMX2571_FM_CAL(0,10.7+atof(msg_temp.data.d));
+    			LMX2571_FM_CAL(1,10.7+atof(msg_temp.data.d));
     			lmx_init[53]=0xBC3;
     			lmx_init[54]=lmx_init[55]=0x9C3;
     			lmx_init[56]=0x9C3;
@@ -601,43 +601,43 @@ void dsp_logic(message_t *msg_send)
     		    	log_error("message send error");
     		    }
     		    break;
-    		case TX_CHF:
-    			log_info("tx_ch:%f",atof(msg_temp.data.d));
-    			LMX2571_FM_CAL(1,atof(msg_temp.data.d));
-    			lmx_init[53]=0xB83;
-    			lmx_init[54]=lmx_init[55]=0x983;
-    			lmx_init[56]=0x983;
-    			ch_chPara();
-    			Task_sleep(10);
-    			memset(buf_transmit,0x80,RPE_DATA_SIZE/2*15);
-    			break;
-    		case RX_CHF:
-    			log_info("rx_ch:%f",10.7+atof(msg_temp.data.d));
-    			LMX2571_FM_CAL(0,10.7+atof(msg_temp.data.d));
-    			lmx_init[53]=0xBC3;
-    			lmx_init[54]=lmx_init[55]=0x9C3;
-    			lmx_init[56]=0x9C3;
-    			ch_chPara();
-    			Task_sleep(10);
-    			memset(buf_transmit,0x80,RPE_DATA_SIZE/2*15);
-    			break;
-    		case H_TX:
-    			dac_write(3, 1.633);
-    			break;
-    		case L_TX:
-    			dac_write(3, 0.8);
-    			break;
-    		case RSSTH:
-    			RXSS_THRESHOLD=atoi(msg_temp.data.d);
-    			break;
+//    		case TX_CHF:
+//    			log_info("tx_ch:%f",atof(msg_temp.data.d));
+//    			LMX2571_FM_CAL(1,atof(msg_temp.data.d));
+//    			lmx_init[53]=0xB83;
+//    			lmx_init[54]=lmx_init[55]=0x983;
+//    			lmx_init[56]=0x983;
+//    			ch_chPara();
+//    			Task_sleep(10);
+//    			memset(buf_transmit,0x80,RPE_DATA_SIZE/2*15);
+//    			break;
+//    		case RX_CHF:
+//    			log_info("rx_ch:%f",10.7+atof(msg_temp.data.d));
+//    			LMX2571_FM_CAL(0,10.7+atof(msg_temp.data.d));
+//    			lmx_init[53]=0xBC3;
+//    			lmx_init[54]=lmx_init[55]=0x9C3;
+//    			lmx_init[56]=0x9C3;
+//    			ch_chPara();
+//    			Task_sleep(10);
+//    			memset(buf_transmit,0x80,RPE_DATA_SIZE/2*15);
+//    			break;
+//    		case H_TX:
+//    			dac_write(3, 1.633);
+//    			break;
+//    		case L_TX:
+//    			dac_write(3, 0.8);
+//    			break;
+//    		case RSSTH:
+//    			RXSS_THRESHOLD=atoi(msg_temp.data.d);
+//    			break;
     		case RXSSI:
     			while(msg_send->data.d[0]!='\0'){
-    				Task_sleep(10);
-    				log_warn("message is not empty");
+    				Task_sleep(50);
+//    				log_warn("message is not empty");
     			}
     			msg_send->type=RXSSI;
     			sprintf(msg_send->data.d,"%f",RSSI_db);
-    			log_info("lmx2571_ld is %f",msg_send->data.d);
+//    			log_info("lmx2571_ld is %f",msg_send->data.d);
     			status=messageq_send(&msgq[0],(messageq_msg_t)msg_send,0,0,0);
     			if(status<0){
     				log_error("message send error");
@@ -645,8 +645,8 @@ void dsp_logic(message_t *msg_send)
     			break;
     		case TXPI:
     			while(msg_send->data.d[0]!='\0'){
-    				Task_sleep(10);
-    				log_warn("message is not empty");
+    				Task_sleep(50);
+//    				log_warn("message is not empty");
     			}
     			msg_send->type=TXPI;
     			ad_value=adc_read(6);

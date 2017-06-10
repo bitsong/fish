@@ -71,4 +71,7 @@ float adc_read(unsigned int ch);
 void dac_write(unsigned int ch, float voltage);
 float temperature_read();
 
+extern void adf_init(void);
+//N:data (221:2188 231:2198 236:2203 238:2205)
+extern void adf_write(unsigned int data);
 #endif//__amc7823_h_

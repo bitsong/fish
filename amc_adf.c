@@ -12,12 +12,11 @@
 #include <ti/csl/cslr_syscfg0_OMAPL138.h>
 #include <ti/csl/cslr_gpio.h>
 
-#include"amc7823.h"
+#include"amc_adf.h"
 
 #define SPI_NUM_OF_TXBITS    16
 
 CSL_SpiRegsOvly  spiRegs=(CSL_SpiRegsOvly)CSL_SPI_1_REGS;
-//CSL_GpioRegsOvly     gpioRegs = (CSL_GpioRegsOvly)(CSL_GPIO_0_REGS);
 unsigned short test_data=0;
 /*
 ================================================================================
@@ -25,14 +24,15 @@ unsigned short test_data=0;
 ================================================================================
 */
 
-//void Spi_dev_init();
+//static void Spi_dev_init();
 void amc_write(unsigned short page, unsigned short addr,unsigned short data);
 unsigned short amc_read(unsigned short page, unsigned short addr);
 
 //int amc7823_init(void);
-//static void Spi_test();
+////static void Spi_test();
 //void configureSPI(void);
-
+//void adf_write(unsigned int data);
+//void adf_init(void);
 /*------------------------------------------------------------------------------
 * static void Spi_dev_init(void)
 ------------------------------------------------------------------------------*/
@@ -87,7 +87,7 @@ void Spi_dev_init(void)
                                   | CSL_FMK(SPI_SPIFMT_PRESCALE,0x31)
                                   | CSL_FMK(SPI_SPIFMT_PHASE,0x00)
                                   | CSL_FMK(SPI_SPIFMT_POLARITY,0x00)
-//                                  | CSL_FMK(SPI_SPIFMT_DISCSTIMERS,0x01)
+                                  | CSL_FMK(SPI_SPIFMT_DISCSTIMERS,0x01)
                                   | CSL_FMK(SPI_SPIFMT_SHIFTDIR,0x00);
 
     /* set the preconfigure data format as 0 which is already set above       */
@@ -126,9 +126,9 @@ void Spi_dev_init(void)
 //    	printf("\namc7823 initial error:%d\n",status);
 //    else
 //    	printf("\namc7823 initial done.\n");
+//    adf_init();
 //
 //    Spi_test();
-//
 //}
 
 /*------------------------------------------------------------------------------
@@ -145,46 +145,110 @@ void Spi_dev_init(void)
 *
 */
 
-static void Spi_test(void)
+//static void Spi_test(void)
+//{
+//	int i;
+//	float vol;
+//
+//#if 1
+////    while (1)
+//    {
+//    	for(i=0;i<0x20;i++){
+//    		test_data=amc_read(0x00,i);
+//    		printf("SPI  read data %x ......\n",test_data);
+//    	}
+////    	amc_write(0x01,0x0a,0);
+//
+//    	for(i=0;i<0x20;i++){
+//    	    		test_data=amc_read(0x01,i);
+//    	    		printf("SPI  read data %x ......\n",test_data);
+//    	    	}
+////    	amc_write(0x01,0x00,0x800);
+////    	test_data=amc_read(0x01,0x00);
+////    	printf("dac00  read data %x ......\n",test_data);
+////
+////    	amc_write(0x01,0x01,0xfff);
+////    	test_data=amc_read(0x01,0x01);
+////    	printf("dac00  read data %x ......\n",test_data);
+////
+////    	amc_write(0x01,0x02,0x800);
+////    	test_data=amc_read(0x01,0x02);
+////    	printf("dac00  read data %x ......\n",test_data);
+////
+////    	amc_write(0x01,0x03,0x800);
+////    	test_data=amc_read(0x01,0x03);
+////    	printf("dac00  read data %x ......\n",test_data);
+//
+//    	for(i=0;i<8;i++)
+//    	{
+//    		vol=adc_read(i);
+//    		printf("adc data is %f\n",vol);
+//    		dac_write(i,3.3);
+//    	}
+//    	vol=temperature_read();
+//		printf("temperature is %f\n",vol);
+//    }
+////#else
+//    unsigned int temp_value;
+////    while(1)
+//    {
+//    	//N(221:2188 231:2198 236:2203 238:2205)
+//    	temp_value = ((2198& 0x1fff)<<8) | 0x1;
+//    	adf_write(temp_value);
+//
+//    	for(i=0;i<10000;i++)
+//    		;
+//    }
+//
+//#endif
+//}
+
+void adf_init(void)
 {
-	int i;
-	float vol;
+	unsigned int temp_value;
 
-//    while (1)
-    {
-    	for(i=0;i<0x20;i++){
-    		test_data=amc_read(0x00,i);
-    		printf("SPI  read data %x ......\n",test_data);
-    	}
-
-
-    	for(i=0;i<0x20;i++){
-    	    		test_data=amc_read(0x01,i);
-    	    		printf("SPI  read data %x ......\n",test_data);
-    	    	}
-
-    	for(i=0;i<8;i++)
-    	{
-    		vol=adc_read(i);
-    		printf("adc data is %f\n",vol);
-    		dac_write(i,1.25);
-    	}
-    	vol=temperature_read();
-		printf("temperature is %f\n",vol);
-    }
+	//function
+	temp_value = 0x000092;
+	adf_write(temp_value);
+	//R
+	temp_value = ((850 & 0x3fff)<<2) | 0x100000;
+	adf_write(temp_value);
+	//N(221:2188 231:2198 236:2203 238:2205)
+	temp_value = ((2188& 0x1fff)<<8) | 0x1;
+	adf_write(temp_value);
 }
-
 
 void configureSPI(void)
 {
     CSL_SyscfgRegsOvly syscfgRegs = (CSL_SyscfgRegsOvly)CSL_SYSCFG_0_REGS;
+
+    //Select PLL0_SYSCLK2
+//    syscfgRegs->CFGCHIP3 &= ~CSL_SYSCFG_CFGCHIP3_ASYNC3_CLKSRC_MASK;
+//    syscfgRegs->CFGCHIP3 |= ((CSL_SYSCFG_CFGCHIP3_ASYNC3_CLKSRC_PLL0)
+//        						  <<(CSL_SYSCFG_CFGCHIP3_ASYNC3_CLKSRC_SHIFT));
 
     syscfgRegs->PINMUX5 &= ~(CSL_SYSCFG_PINMUX5_PINMUX5_3_0_MASK |
     						 CSL_SYSCFG_PINMUX5_PINMUX5_7_4_MASK |
                              CSL_SYSCFG_PINMUX5_PINMUX5_11_8_MASK |
                              CSL_SYSCFG_PINMUX5_PINMUX5_19_16_MASK |
                              CSL_SYSCFG_PINMUX5_PINMUX5_23_20_MASK );
+
     syscfgRegs->PINMUX5   |= 0x00110111;
+//    CSL_FINS(gpioRegs->BANK[1].DIR,GPIO_DIR_DIR14,0);
+//    CSL_FINS(gpioRegs->BANK[1].DIR,GPIO_DIR_DIR15,0);
+
+//    syscfgRegs->PINMUX5   |= 0x00880888;
+
+//    syscfgRegs->PINMUX10 &= ~(CSL_SYSCFG_PINMUX10_PINMUX10_23_20_MASK|
+//    						 CSL_SYSCFG_PINMUX10_PINMUX10_31_28_MASK);
+//    syscfgRegs->PINMUX10 |= 0x80800000;
+//    //GP4[0]	MUX
+//    CSL_FINS(gpioRegs->BANK[2].DIR,GPIO_DIR_DIR0,1);
+//    //GP4[2]	T/R
+//    CSL_FINS(gpioRegs->BANK[2].DIR,GPIO_DIR_DIR2,0);
+//    CSL_FINS(gpioRegs->BANK[2].OUT_DATA,GPIO_OUT_DATA_OUT2,1);
+//    CSL_FINS(gpioRegs->BANK[2].OUT_DATA,GPIO_OUT_DATA_OUT2,0);
+
 }
 
 /*
@@ -209,6 +273,24 @@ unsigned short spi_read()
 	return data;
 }
 
+void adf_write(unsigned int data)
+{
+	unsigned short data_low=data&0xffff;
+	unsigned short data_high=data>>16;
+
+	spiRegs->SPIDAT1=CSL_FMK(SPI_SPIDAT1_DFSEL,0)
+			|CSL_FMK(SPI_SPIDAT1_CSHOLD,1)
+			|CSL_FMK(SPI_SPIDAT1_CSNR,1)
+			|CSL_FMK(SPI_SPIDAT1_TXDATA,data_high);
+
+	spiRegs->SPIDAT1=CSL_FMK(SPI_SPIDAT1_DFSEL,0)
+				|CSL_FMK(SPI_SPIDAT1_CSHOLD,0)
+				|CSL_FMK(SPI_SPIDAT1_CSNR,1)
+				|CSL_FMK(SPI_SPIDAT1_TXDATA,data_low);
+	spi_read();
+	spi_read();
+}
+
 unsigned short amc_read(unsigned short page, unsigned short addr)
 {
 	unsigned short command;
@@ -218,12 +300,12 @@ unsigned short amc_read(unsigned short page, unsigned short addr)
 			|CSL_FMK(SPI_SPIDAT1_CSHOLD,1)
 			|CSL_FMK(SPI_SPIDAT1_CSNR,2)			//IF ADF4002 THEN CSNR :1
 			|CSL_FMK(SPI_SPIDAT1_TXDATA,command);
-
+	spi_read();
 	spiRegs->SPIDAT1=CSL_FMK(SPI_SPIDAT1_DFSEL,0)
 				|CSL_FMK(SPI_SPIDAT1_CSHOLD,0)
 				|CSL_FMK(SPI_SPIDAT1_CSNR,2)
 				|CSL_FMK(SPI_SPIDAT1_TXDATA,0);
-	spi_read();
+
 	return (spi_read());
 }
 
@@ -236,13 +318,13 @@ void amc_write(unsigned short page, unsigned short addr,unsigned short data)
 			|CSL_FMK(SPI_SPIDAT1_CSHOLD,1)
 			|CSL_FMK(SPI_SPIDAT1_CSNR,2)
 			|CSL_FMK(SPI_SPIDAT1_TXDATA,command);
-
+	spi_read();
 	spiRegs->SPIDAT1=CSL_FMK(SPI_SPIDAT1_DFSEL,0)
 				|CSL_FMK(SPI_SPIDAT1_CSHOLD,0)
 				|CSL_FMK(SPI_SPIDAT1_CSNR,2)
 				|CSL_FMK(SPI_SPIDAT1_TXDATA,data);
 	spi_read();
-	spi_read();
+
 }
 
 float adc_read(unsigned int ch)
